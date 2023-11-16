@@ -1,6 +1,7 @@
 // LogoutButton.js
 import React from 'react';
 import { useAuth } from './AuthContext';
+import { Button } from '@mui/material';
 
 const LogoutButton = () => {
   const { logout } = useAuth();
@@ -8,11 +9,12 @@ const LogoutButton = () => {
     try {
       logout()
     } catch (error) {
+
     }
   };
 
   return (
-    <button onClick={handleLogout}>Logout</button>
+    <Button onClick={handleLogout} >Logout</Button>
   );
 };
 
