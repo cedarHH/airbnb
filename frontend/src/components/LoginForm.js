@@ -1,6 +1,5 @@
 // LoginForm.js
 import React, { useEffect, useState } from 'react';
-import authService from './authService';
 import { useAuth } from './AuthContext';
 import { useNavigate } from 'react-router';
 
@@ -11,15 +10,15 @@ const LoginForm = () => {
   const navigate = useNavigate();
   useEffect(() => {
     if (isLoggedIn) {
-      navigate('/');
+      navigate('/'); 
     }
   }, [isLoggedIn, navigate]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     try {
-      const response = await authService.login(email, password);
-      login(response.data.token);
+      login(email, password);
+
     } catch (error) {
     }
   };
