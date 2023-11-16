@@ -13,8 +13,9 @@ const RegisterForm = () => {
     event.preventDefault();
     try {
       await authService.register(email, password, name);
-      navigate('/login');
+      navigate('/login'); 
     } catch (error) {
+      
     }
   };
 
