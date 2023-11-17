@@ -10,7 +10,7 @@ import {
   TableCell,
   TextField,
   Button,
-  TableHead, DialogActions, DialogContent, DialogTitle, Dialog
+  TableHead, DialogActions, DialogContent, DialogTitle, Dialog, TableContainer
 } from '@mui/material';
 import listingService from './listingService';
 import Rating from '@mui/material/Rating';
@@ -18,6 +18,8 @@ import Listing from './Class/listing';
 import Review from './Class/review';
 import { useAuth } from '../Auth/AuthContext';
 import bookingService from './bookingService';
+// eslint-disable-next-line no-unused-vars
+import ProfitsGraph from './ProfitsGraph';
 
 function DetailView () {
   const { id } = useParams();
@@ -25,8 +27,10 @@ function DetailView () {
   const [email, setEmail] = useState();
   const { isLoggedIn } = useAuth();
   const [booking, setBooking] = useState();
-  const [bookingDates, setBookingDates] = useState({ start: '', end: '' });
   const [bookings, setBookings] = useState([]);
+  useEffect(() => {
+    setEmail(localStorage.getItem('email'))
+  }, []);
   useEffect(() => {
     const fetchListing = async () => {
       try {
@@ -34,7 +38,8 @@ function DetailView () {
         const data = response.data.listing;
         const reviews = data.reviews.map(review => new Review(review.reviewer, review.rating, review.comment));
         // console.log(new Listing(id, data.title, data.metadata.propertyType, data.metadata.numberOfBeds, data.metadata.numberOfBathrooms, data.thumbnail, reviews, data.price, data.published, data.availability, data.address));
-        setListing(new Listing(id, data.title, data.metadata.propertyType, data.metadata.numberOfBeds, data.metadata.numberOfBathrooms, data.thumbnail, reviews, data.price, data.published, data.availability, data.address, data.owner));
+        setListing(new Listing(id, data.title, data.metadata.propertyType, data.metadata.numberOfBeds, data.metadata.numberOfBathrooms, data.thumbnail, reviews, data.price, data.published, data.availability, data.address, data.owner, data.postedOn, data.metadata.youtube));
+        console.log(listing)
       } catch (error) {
         console.error('Error fetching listing details:', error);
       }
@@ -43,41 +48,12 @@ function DetailView () {
     fetchListing();
   }, []);
 
-  const handleBookingChange = (e) => {
-    setBookingDates({ ...bookingDates, [e.target.name]: e.target.value });
-  };
-  useEffect(() => {
-    setEmail(localStorage.getItem('email'));
-  }, []);
-
-  const handleBookingSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const days = (new Date(bookingDates.end) - new Date(bookingDates.start)) / (1000 * 3600 * 24);
-      const totalPrice = days * parseFloat(listing.pricePerNight);
-
-      const newBooking = {
-        dateRange: {
-          start: bookingDates.start,
-          end: bookingDates.end
-        },
-        totalPrice
-      };
-
-      await bookingService.createBooking(id, newBooking);
-      alert('Booking confirmed');
-      
-    } catch (error) {
-      console.error('Booking error:', error);
-      alert('Booking error: ' + error.response.data.error);
-    }
-  };
-  
   const fetchBookings = async () => {
     try {
       const response = await bookingService.getBookings();
       const filteredBookings = response.data.bookings.filter(booking => parseInt(booking.listingId) === parseInt(id));
       setBookings(filteredBookings);
+      console.log(filteredBookings)
     } catch (error) {
       console.error('Error fetching bookings:', error);
     }
@@ -93,7 +69,7 @@ function DetailView () {
     comment: ''
   });
 
-  
+  // eslint-disable-next-line no-unused-vars
   const handleOpenDialog = () => {
     setOpenDialog(true);
   };
@@ -108,6 +84,25 @@ function DetailView () {
 
   const handleRatingChange = (newRating) => {
     setReview({ ...review, rating: newRating });
+  };
+  const calculateDuration = (postedOn) => {
+    const postedDate = new Date(postedOn);
+    const currentDate = new Date();
+
+    const differenceInTime = currentDate.getTime() - postedDate.getTime();
+
+    const differenceInDays = Math.floor(differenceInTime / (1000 * 3600 * 24));
+    if (differenceInDays < 30) {
+      return `${differenceInDays} days`;
+    }
+
+    const differenceInMonths = Math.floor(differenceInDays / 30);
+    if (differenceInMonths < 12) {
+      return `${differenceInMonths} months`;
+    }
+
+    const differenceInYears = Math.floor(differenceInMonths / 12);
+    return `${differenceInYears} years`;
   };
 
   const handleAccept = async (booking) => {
@@ -145,7 +140,32 @@ function DetailView () {
   if (!listing) {
     return <Typography>Loading...</Typography>;
   }
+  const calculateBookedDaysThisYear = (bookings) => {
+    const currentYear = new Date().getFullYear();
+    return bookings
+      .filter(booking =>
+        booking.status === 'accepted' &&
+        new Date(booking.dateRange.start).getFullYear() === currentYear
+      )
+      .reduce((totalDays, booking) => {
+        const startDate = new Date(booking.dateRange.start);
+        const endDate = new Date(booking.dateRange.end);
+        const duration = (endDate - startDate) / (1000 * 3600 * 24);
+        return totalDays + duration;
+      }, 0);
+  };
+  const calculateProfitThisYear = (bookings) => {
+    const currentYear = new Date().getFullYear();
+    return bookings
+      .filter(booking =>
+        booking.status === 'accepted' &&
+        new Date(booking.dateRange.start).getFullYear() === currentYear
+      )
+      .reduce((totalProfit, booking) => totalProfit + booking.totalPrice, 0);
+  };
 
+  const bookedDaysThisYear = calculateBookedDaysThisYear(bookings);
+  const profitThisYear = calculateProfitThisYear(bookings);
   const handleSubmitReview = async () => {
     try {
       const reviewer = localStorage.getItem('email');
@@ -155,7 +175,6 @@ function DetailView () {
         rating: review.rating,
         comment: review.comment
       };
-      
       await listingService.reviewListing(booking.listingId, booking.id, newReview);
 
       handleCloseDialog();
@@ -168,49 +187,95 @@ function DetailView () {
     setBooking(booking);
     handleOpenDialog();
   }
+  const extractYoutubeId = (url) => {
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/);
+    return match ? match[1] : null;
+  };
 
   return (
     <Box sx={{ padding: 2 }}>
       <Typography variant="h4">{listing.title}</Typography>
-      <Paper sx={{ my: 2 }}>
-        <Table>
+      <TableContainer component={Paper}>
+        <Table aria-label="listings table">
+          <TableHead>
+            <TableRow>
+              <TableCell align="left">Name</TableCell>
+              <TableCell align="left">Value</TableCell>
+            </TableRow>
+          </TableHead>
           <TableBody>
             <TableRow>
-              <TableCell component="th" scope="row">Title</TableCell>
+              <TableCell>Title</TableCell>
               <TableCell>{listing.title}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell component="th" scope="row">Address</TableCell>
+              <TableCell>Address</TableCell>
               <TableCell>{listing.address.street}, {listing.address.city}, {listing.address.state} {listing.address.zipCode}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell component="th" scope="row">Price Per Night</TableCell>
+              <TableCell>Price / Night</TableCell>
               <TableCell>${listing.pricePerNight}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell component="th" scope="row">Property Type</TableCell>
+              <TableCell>Property Type</TableCell>
               <TableCell>{listing.propertyType}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell component="th" scope="row">Number of Bedrooms</TableCell>
+              <TableCell>Bedrooms</TableCell>
               <TableCell>{listing.numberOfBeds}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell component="th" scope="row">Number of Bathrooms</TableCell>
+              <TableCell>Bathrooms</TableCell>
               <TableCell>{listing.numberOfBathrooms}</TableCell>
             </TableRow>
             <TableRow>
-              <TableCell component="th" scope="row">Review Rating</TableCell>
+              <TableCell>Rating</TableCell>
               <TableCell><Rating value={listing.averageRating} readOnly/></TableCell>
             </TableRow>
-            {/*  */}
+            <TableRow>
+              <TableCell>Status</TableCell>
+              <TableCell>{listing.published === true ? 'Published' : 'Unpublished'}</TableCell>
+            </TableRow>
+            {listing.published === true && (
+              <TableRow>
+                <TableCell>Time Online</TableCell>
+                <TableCell>{calculateDuration(listing.postedOn)}</TableCell>
+              </TableRow>
+            )}
+            <TableRow>
+              <TableCell>Booked Days This Year</TableCell>
+              <TableCell>{bookedDaysThisYear} days</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Profit This Year</TableCell>
+              <TableCell>${profitThisYear}</TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell component="th" scope="row">Videos</TableCell>
+              <TableCell>
+                {listing.youtube && listing.youtube !== '' && (
+                  <iframe
+                    width="560"
+                    height="315"
+                    src={`https://www.youtube.com/embed/${extractYoutubeId(listing.youtube)}`}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                )}
+              </TableCell>
+
+            </TableRow>
+              <ProfitsGraph bookings={bookings} />
+            {/* */}
           </TableBody>
         </Table>
-      </Paper>
+      </TableContainer>
+      <Box my={2} />
       {isLoggedIn && (
         <>
-          <Paper sx={{ my: 2 }}>
-            <Table>
+          <TableContainer component={Paper}>
+            <Table aria-label="listings table">
               <TableHead>
                 <TableRow>
                   <TableCell>ID</TableCell>
@@ -252,26 +317,7 @@ function DetailView () {
                 ))}
               </TableBody>
             </Table>
-          </Paper>
-          <Box component="form" onSubmit={handleBookingSubmit}>
-            <TextField
-              name="start"
-              label="Start Date"
-              type="date"
-              value={bookingDates.start}
-              onChange={handleBookingChange}
-              InputLabelProps={{ shrink: true }}
-            />
-            <TextField
-              name="end"
-              label="End Date"
-              type="date"
-              value={bookingDates.end}
-              onChange={handleBookingChange}
-              InputLabelProps={{ shrink: true }}
-            />
-            <Button type="submit" variant="contained" sx={{ mt: 2 }}>Confirm Booking</Button>
-          </Box>
+          </TableContainer>
         </>
       )}
       <Dialog open={openDialog} onClose={handleCloseDialog}>
