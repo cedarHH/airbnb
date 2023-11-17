@@ -48,7 +48,7 @@ function HostedListing () {
       const userEmail = localStorage.getItem('email');
       console.log(userEmail);
       const response = await listingService.getAllListing();
-      const listingsData = response.data.listings; 
+      const listingsData = response.data.listings;
       return await Promise.all(listingsData.filter(item => item.owner === userEmail).map(async (item) => {
         const detailResponse = await listingService.getListingDetail(item.id);
         const data = detailResponse.data.listing;
