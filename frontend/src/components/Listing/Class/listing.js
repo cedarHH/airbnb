@@ -1,5 +1,6 @@
+// eslint-disable-next-line no-unused-vars
 class Listing {
-  constructor (id, title, propertyType, numberOfBeds, numberOfBathrooms, thumbnail, reviews, pricePerNight, published = false, availability, address, owner) {
+  constructor (id, title, propertyType, numberOfBeds, numberOfBathrooms, thumbnail, reviews, pricePerNight, published = false, availability, address, owner, postedOn, youtube) {
     this.id = id;
     this.title = title;
     this.propertyType = propertyType;
@@ -11,7 +12,9 @@ class Listing {
     this.published = published;
     this.availability = availability;
     this.address = address;
-    this.owner = owner
+    this.owner = owner;
+    this.postedOn = postedOn;
+    this.youtube = youtube;
   }
 
   get averageRating () {
