@@ -88,7 +88,7 @@ function CreateListing () {
   };
 
   const isValidJsonStructure = (json) => {
-    return json && json.title && json.price && json.thumbnail; 
+    return json && json.title && json.price && json.thumbnail;
   };
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ '& .MuiTextField-root': { m: 1 }, maxWidth: 500, mx: 'auto' }}>
