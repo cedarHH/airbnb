@@ -21,16 +21,13 @@ function SearchListings () {
   useEffect(() => {
     const fetchData = async () => {
       try {
-
         const response = await listingService.getAllListing();
-        const listingsData = response.data.listings; 
+        const listingsData = response.data.listings;
         return await Promise.all(listingsData.map(async (item) => {
           const detailResponse = await listingService.getListingDetail(item.id);
           const data = detailResponse.data.listing;
           const metadata = data.metadata;
-
           const reviews = data.reviews.map(review => new Review(review.reviewer, review.rating, review.comment));
-
           return new Listing(item.id, data.title, metadata.propertyType, metadata.numberOfBeds, metadata.numberOfBathrooms, data.thumbnail, reviews, data.price, data.published, data.availability, data.address, data.owner);
         }));
       } catch (error) {
@@ -65,19 +62,16 @@ function SearchListings () {
     const { searchString, bedroomsRange, startDate, endDate, priceRange } = searchParams;
 
     return listings.filter(listing => {
-
       const matchesSearchString = listing.title.toLowerCase().includes(searchString.toLowerCase()) ||
         (listing.address && listing.address.city && listing.address.city.toLowerCase().includes(searchString.toLowerCase()));
 
       // console.log('matchesSearchString : ', matchesSearchString)
-
 
       const matchesBedrooms = parseInt(listing.numberOfBeds) >= bedroomsRange[0] && parseInt(listing.numberOfBeds) <= bedroomsRange[1];
       // console.log('matchesSearchString : ', matchesSearchString)
 
       const matchesPrice = parseFloat(listing.pricePerNight) >= priceRange[0] && parseFloat(listing.pricePerNight) <= priceRange[1];
       // console.log('matchesPrice : ', matchesPrice)
-
 
       let matchesDates = true;
       if (startDate && endDate) {
