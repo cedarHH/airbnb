@@ -4,7 +4,6 @@ import LoginForm from './LoginForm';
 import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from './AuthContext';
 
-
 const renderLoginForm = (isLoggedIn = false) => {
   const mockLogin = jest.fn();
   return render(
