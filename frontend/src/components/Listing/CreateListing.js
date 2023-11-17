@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { TextField, Button, Box, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
+import { TextField, Button, Box, FormControl, InputLabel, Select, MenuItem, Input } from '@mui/material';
 import listingService from './listingService';
 import { useNavigate } from 'react-router';
+import { fileToDataUrl } from '../helpers';
 
 function CreateListing () {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ function CreateListing () {
     city: '',
     state: '',
     zipCode: ''
+
 
   });
 
@@ -40,18 +42,58 @@ function CreateListing () {
         propertyType: formData.propertyType,
         numberOfBeds: formData.numberOfBeds,
         numberOfBathrooms: formData.numberOfBathrooms,
-        reviews: []
+        reviews: [] 
       }
     };
     try {
       const response = await listingService.createListing(fullData);
       alert('Listing created:' + response.data.listingId);
       navigate('/hosted-listings')
+
     } catch (error) {
       console.error('Error creating listing:', error);
     }
   };
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file && file.type === 'application/json') {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const jsonData = JSON.parse(e.target.result);
 
+          if (isValidJsonStructure(jsonData)) {
+            setFormData({ ...jsonData });
+          } else {
+            alert('Invalid JSON structure');
+          }
+        } catch (error) {
+          console.error('Error reading JSON:', error);
+          alert('Error reading JSON file');
+        }
+      };
+      reader.readAsText(file);
+    } else {
+      alert('Please upload a JSON file');
+    }
+  };
+  const handleThumbnailUpload = async (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      try {
+        const dataUrl = await fileToDataUrl(file);
+        setFormData({ ...formData, thumbnail: dataUrl });
+      } catch (error) {
+        console.error('Error converting file:', error);
+        alert('Error converting file');
+      }
+    }
+  };
+
+  const isValidJsonStructure = (json) => {
+
+    return json && json.title && json.price && json.thumbnail; 
+  };
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ '& .MuiTextField-root': { m: 1 }, maxWidth: 500, mx: 'auto' }}>
       <TextField
@@ -69,6 +111,16 @@ function CreateListing () {
         fullWidth
         type="number"
       />
+      <FormControl fullWidth margin="normal">
+        <Input
+          accept="image/jpeg, image/png"
+          id="thumbnail-upload"
+          type="file"
+          placeholder="test"
+          onChange={handleThumbnailUpload}
+        />
+      </FormControl>
+
       <TextField
         name="thumbnail"
         label="Thumbnail URL"
@@ -134,6 +186,12 @@ function CreateListing () {
         type="number"
       />
       {}
+      <input
+        type="file"
+        onChange={handleFileUpload}
+        accept=".json"
+        style={{ margin: '10px 0' }}
+      />
       <Button type="submit" variant="contained" sx={{ mt: 2 }}>Create Listing</Button>
     </Box>
   );
