@@ -5,13 +5,12 @@ import { Box } from '@mui/material';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
-
 const getLast30DaysDates = () => {
   const dates = [];
   for (let i = 29; i >= 0; i--) {
     const date = new Date();
     date.setDate(date.getDate() - i);
-    dates.push(date.toLocaleDateString()); 
+    dates.push(date.toLocaleDateString());
   }
   return dates;
 };
