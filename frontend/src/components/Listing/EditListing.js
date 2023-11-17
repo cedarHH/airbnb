@@ -86,10 +86,8 @@ function EditListing () {
       navigate('/hosted-listings');
     } catch (error) {
       console.error('Error updating listing:', error);
-
     }
   };
-
 
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ '& .MuiTextField-root': { m: 1 }, maxWidth: 500, mx: 'auto' }}>
