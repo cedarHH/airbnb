@@ -17,8 +17,6 @@ function CreateListing () {
     city: '',
     state: '',
     zipCode: ''
-
-
   });
 
   const handleChange = (e) => {
@@ -42,14 +40,13 @@ function CreateListing () {
         propertyType: formData.propertyType,
         numberOfBeds: formData.numberOfBeds,
         numberOfBathrooms: formData.numberOfBathrooms,
-        reviews: [] 
+        reviews: []
       }
     };
     try {
       const response = await listingService.createListing(fullData);
       alert('Listing created:' + response.data.listingId);
       navigate('/hosted-listings')
-
     } catch (error) {
       console.error('Error creating listing:', error);
     }
@@ -91,7 +88,6 @@ function CreateListing () {
   };
 
   const isValidJsonStructure = (json) => {
-
     return json && json.title && json.price && json.thumbnail; 
   };
   return (
