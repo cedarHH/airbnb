@@ -9,7 +9,6 @@ const LogoutButton = () => {
     try {
       logout()
     } catch (error) {
-
     }
   };
 

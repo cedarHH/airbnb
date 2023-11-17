@@ -18,7 +18,6 @@ const LoginForm = () => {
     event.preventDefault();
     try {
       login(email, password);
-
     } catch (error) {
     }
   };
