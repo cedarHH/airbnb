@@ -38,10 +38,49 @@ const updateListing = async (listingId, listingData) => {
   return axios.put(`${API_URL}/${listingId}`, listingData, config);
 };
 
+const publishListing = async (listingId, availability) => {
+  const token = localStorage.getItem('token');
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  };
+  return axios.put(`${API_URL}/publish/${listingId}`, availability, config);
+}
+const unPublishListing = async (listingId) => {
+  const token = localStorage.getItem('token');
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  };
+  return axios.put(`${API_URL}/unpublish/${listingId}`, null, config);
+}
+
+const reviewListing = async (listingId, bookingId, review) => {
+  const token = localStorage.getItem('token');
+  const config = {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  };
+  const data = {
+    review: {
+      reviewer: review.reviewer,
+      rating: review.rating,
+      comment: review.comment
+    }
+  }
+  return axios.put(`${API_URL}/${listingId}/review/${bookingId}`, data, config);
+}
+
 export default {
   getAllListing,
   getListingDetail,
   deleteListing,
   createListing,
-  updateListing
+  updateListing,
+  publishListing,
+  unPublishListing,
+  reviewListing
 };
