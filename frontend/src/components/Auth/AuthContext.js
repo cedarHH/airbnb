@@ -1,7 +1,8 @@
+// AuthContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import authService from './authService';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -15,10 +16,15 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const response = await authService.login(email, password);
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('email', email);
-    setIsLoggedIn(true);
+    try {
+      const response = await authService.login(email, password);
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('email', email);
+      setIsLoggedIn(true);
+    } catch (error) {
+      alert('Login error: ' + error.response.data.error);
+      console.log(error.response)
+    }
   };
 
   const logout = async () => {
