@@ -14,19 +14,25 @@ const Navbar = () => {
   return (
     <AppBar position="static">
       <Toolbar>
+        <Box sx={{ flexGrow: 1 }}>
+          <Button color="inherit" component={RouterLink} to="/">Home</Button>
+          {/* <Button color="inherit" component={RouterLink} to="/search">Search</Button> */}
         {isLoggedIn
           ? (
-            <Box sx={{ flexGrow: 1 }}>
+            <>
               <Button color="inherit" component={RouterLink} to="/hosted-listings">My Hosted Listings</Button>
               <Button color="inherit" component={RouterLink} to="/all-listings">All Listings</Button>
-            </Box>
+            </>
+
             )
           : (
-            <Box sx={{ flexGrow: 1 }}>
+            <>
               <Button color="inherit" component={RouterLink} to="/login">Login</Button>
               <Button color="inherit" component={RouterLink} to="/register">Register</Button>
-            </Box>
+            </>
+
             )}
+      </Box>
         {isLoggedIn && <Button color="inherit" onClick={handleLogout}>Logout</Button>}
       </Toolbar>
     </AppBar>
