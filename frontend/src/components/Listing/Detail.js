@@ -35,7 +35,7 @@ function DetailView () {
         const data = response.data.listing;
         const reviews = data.reviews.map(review => new Review(review.reviewer, review.rating, review.comment));
         // console.log(new Listing(id, data.title, data.metadata.propertyType, data.metadata.numberOfBeds, data.metadata.numberOfBathrooms, data.thumbnail, reviews, data.price, data.published, data.availability, data.address));
-        setListing(new Listing(id, data.title, data.metadata.propertyType, data.metadata.numberOfBeds, data.metadata.numberOfBathrooms, data.thumbnail, reviews, data.price, data.published, data.availability, data.address, data.owner));
+        setListing(new Listing(id, data.title, data.metadata.propertyType, data.metadata.numberOfBeds, data.metadata.numberOfBathrooms, data.thumbnail, reviews, data.price, data.published, data.availability, data.address, data.owner, null, data.metadata.youtube));
       } catch (error) {
         console.error('Error fetching listing details:', error);
       }
@@ -67,13 +67,11 @@ function DetailView () {
 
       await bookingService.createBooking(id, newBooking);
       alert('Booking confirmed');
-      
     } catch (error) {
       console.error('Booking error:', error);
       alert('Booking error: ' + error.response.data.error);
     }
   };
-  
   const fetchBookings = async () => {
     try {
       const response = await bookingService.getBookings();
@@ -94,7 +92,6 @@ function DetailView () {
     comment: ''
   });
 
- 
   const handleOpenDialog = () => {
     setOpenDialog(true);
   };
@@ -146,17 +143,19 @@ function DetailView () {
   if (!listing) {
     return <Typography>Loading...</Typography>;
   }
+  const extractYoutubeId = (url) => {
+    const match = url.match(/(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]+)/);
+    return match ? match[1] : null;
+  };
 
   const handleSubmitReview = async () => {
     try {
       const reviewer = localStorage.getItem('email');
-      
       const newReview = {
         reviewer,
         rating: review.rating,
         comment: review.comment
       };
-      
       await listingService.reviewListing(booking.listingId, booking.id, newReview);
 
       handleCloseDialog();
@@ -204,7 +203,23 @@ function DetailView () {
               <TableCell component="th" scope="row">Review Rating</TableCell>
               <TableCell><Rating value={listing.averageRating} readOnly/></TableCell>
             </TableRow>
-            {/* */}
+            <TableRow>
+              <TableCell component="th" scope="row">Videos</TableCell>
+              <TableCell>
+                {listing.youtube && listing.youtube !== '' && (
+                  <iframe
+                    width="560"
+                    height="315"
+                    src={`https://www.youtube.com/embed/${extractYoutubeId(listing.youtube)}`}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                )}
+              </TableCell>
+
+            </TableRow>
+            {/**/}
           </TableBody>
         </Table>
       </Paper>
