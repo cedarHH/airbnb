@@ -11,7 +11,7 @@ const LoginForm = () => {
 
   useEffect(() => {
     if (isLoggedIn) {
-      navigate('/'); 
+      navigate('/');
     }
   }, [isLoggedIn, navigate]);
 
@@ -19,9 +19,7 @@ const LoginForm = () => {
     event.preventDefault();
     try {
       login(email, password);
-
     } catch (error) {
-
       alert('Login error: ');
       console.log(error.response)
     }
