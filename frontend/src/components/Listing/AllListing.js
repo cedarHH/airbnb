@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import listingService from './listingService';
 import Listing from './Class/listing';
 import Review from './Class/review';
 import {
@@ -18,10 +19,8 @@ function AllListing () {
   useEffect(() => {
     const fetchData = async () => {
       try {
-
         const response = await listingService.getAllListing();
-        const listingsData = response.data.listings; 
-
+        const listingsData = response.data.listings;
         return await Promise.all(listingsData.map(async (item) => {
           const detailResponse = await listingService.getListingDetail(item.id);
           const data = detailResponse.data.listing;
