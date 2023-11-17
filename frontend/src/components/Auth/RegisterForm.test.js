@@ -2,9 +2,9 @@ import React from 'react';
 import { render, fireEvent, screen } from '@testing-library/react';
 import RegisterForm from './RegisterForm';
 import { BrowserRouter } from 'react-router-dom';
-import authService from './authService';
+// import authService from './authService';
 
-jest.mock('./authService'); 
+jest.mock('./authService');
 
 describe('RegisterForm Component', () => {
   beforeEach(() => {
@@ -28,5 +28,4 @@ describe('RegisterForm Component', () => {
     expect(screen.getByLabelText(/password/i).value).toBe('password123');
     expect(screen.getByLabelText(/name/i).value).toBe('John Doe');
   });
-
 });
